@@ -1,0 +1,23 @@
+{
+  "name": "@local/dsh-queue-resume-on-stop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "After a user stop, keep the queued messages flowing instead of leaving them stranded in the inbox",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

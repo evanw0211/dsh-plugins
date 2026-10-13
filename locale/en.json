@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Resume Queue On Stop",
+    "description": "Keeps queued messages flowing after the Stop button cancels a running turn."
+  }
+}
