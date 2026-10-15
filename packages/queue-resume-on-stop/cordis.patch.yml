@@ -1,0 +1,5 @@
+- insert:
+    - id: queue-resume-on-stop
+      name: '@local/dsh-queue-resume-on-stop'
+      config:
+        enabled: true

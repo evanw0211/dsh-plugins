@@ -1,0 +1,6 @@
+node_modules/
+*.log
+
+# The throwaway auth helper used while verifying writes a live launch token here.
+dev/auth-url.txt
+dev/auth-url-helper/
