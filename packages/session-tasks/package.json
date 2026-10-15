@@ -1,0 +1,23 @@
+{
+  "name": "@local/dsh-session-tasks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Send a task message from one conversation to another",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

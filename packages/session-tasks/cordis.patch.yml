@@ -1,0 +1,4 @@
+- insert:
+    - id: session-tasks
+      name: '@local/dsh-session-tasks'
+      config: {}
