@@ -1,0 +1,10 @@
+# Dependencies are workspace links only; nothing is installed from a registry.
+node_modules/
+
+# Scratch output.
+*.log
+
+# Dev scratch that must never be committed: a live launch token, and the
+# throwaway auth helper that writes it (see queue-resume-on-stop/dev).
+**/dev/auth-url.txt
+**/dev/auth-url-helper/
