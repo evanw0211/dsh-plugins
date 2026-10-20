@@ -28,13 +28,28 @@ answered) until some *new* message happens to wake the driver.
 
 On every durable `turn/end` whose reason is `aborted` with cause `user` (the Stop
 button) or `parent` (a parent interrupting a child), if the same agent still has
-pending `nextTurn` prompts, the plugin asks the loop to wake once more — exactly
-as a message typed a moment after the Stop would. The next turn then claims the
-queued prompts and sends them to the model.
+pending prompts, the plugin asks the loop to wake once more — exactly as a message
+typed a moment after the Stop would. The next turn then claims the pending
+prompts and sends them to the model.
+
+"Pending" covers both inbox boundaries:
+
+- **`nextTurn`** — prompts waiting for their own turn (the normal queue).
+- **`nextStep`** — *steering* prompts, which DSH 0.2.1 introduced
+  (`agent.steer()`, `busyEnter: 'steer'`, or the queue row's steer action). A stop
+  that lands before the next step boundary strands them exactly like a queued
+  prompt.
+
+`nextStep` also carries injected context (`agent.inject()`, runtime snapshots,
+subagent results). Injection is deliberately non-waking, so only messages whose
+source is a real prompt (`user`, `agent-message`) count.
 
 `disposed` (teardown) and `hook` (credential/session invalidation) aborts are
-ignored: restarting work there would fight the teardown. `next-step` input
-(`agent.inject()`) is deliberately non-waking and is not resumed.
+ignored: restarting work there would fight the teardown.
+
+If the private wake primitive is missing or does not start a turn, the plugin
+falls back to the public surface once the agent settles to idle: it removes one
+stranded prompt and re-queues it with `followup()`, which wakes the driver.
 
 ## Install
 
@@ -48,8 +63,9 @@ plugin_manager install_bundle  <path-to-this-directory>
 
 Equivalently, from the CLI: `dsh plugin --profile <name> add <path-to-this-directory>`.
 
-Requires DSH `0.2.0-rc.2`. The bundle resolves every Harness package from the
-running installation, so it declares no dependencies of its own.
+Requires DSH `0.2.0-rc.2`. Verified against `0.2.1-rc.2` (both inbox boundaries).
+The bundle resolves every Harness package from the running installation, so it
+declares no dependencies of its own.
 
 ## Configuration
 
@@ -59,7 +75,12 @@ running installation, so it declares no dependencies of its own.
 - id: queue-resume-on-stop
   config:
     enabled: false   # turn the behavior off without uninstalling
+    trace: true      # append apply/wake/recovery breadcrumbs to apply.log
 ```
+
+`trace: true` (or `DSH_QUEUE_RESUME_TRACE=1` in the environment) writes one JSON
+line per apply, wake, and recovery to `apply.log` beside `index.js`, so a silent
+no-op is visible without a debugger.
 
 ## Files
 
@@ -69,6 +90,7 @@ running installation, so it declares no dependencies of its own.
 | `cordis.patch.yml` | Inserts the `queue-resume-on-stop` row |
 | `package.json` | Bundle manifest (`dsh.bundle.patch`) |
 | `locale/*.json` | Plugin Manager display text |
+| `dev/verify.mjs` | Decision-logic checks (both boundaries, injected context, recovery) |
 | `dev/scan-stranded-queue.mjs` | Scans stored session logs for "stop stranded the queue" occurrences |
 | `dev/dump-session.mjs` | Dumps a slice of one `session.v4.jsonl.zstd` log |
 
@@ -82,5 +104,7 @@ running, which is exactly where this listener executes.
 
 So the plugin calls `wakeDriver(true)` when it exists: it mutates only the
 in-memory phase latch (the identical call `send()` makes on its post-abort path)
-and appends nothing to the session log. If a future loop renames it, the plugin
-falls back to the public remove + `followup()` path, deferred past the append.
+and appends nothing to the session log. Because that primitive is private, the
+plugin then waits for the agent to settle: an idle agent that still has pending
+prompts means the wake did not take, so the public remove + `followup()` recovery
+runs instead. That also covers a loop that renames or drops `wakeDriver`.

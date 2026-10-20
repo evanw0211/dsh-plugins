@@ -46,6 +46,7 @@ There is nothing to build. To link the workspace and run a package's own check:
 
 ```powershell
 pnpm install
+node packages/queue-resume-on-stop/dev/verify.mjs
 node packages/session-tasks/dev/verify.mjs
 ```
 

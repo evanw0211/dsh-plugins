@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-queue-resume-on-stop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "After a user stop, keep the queued messages flowing instead of leaving them stranded in the inbox",
